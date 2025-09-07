@@ -74,6 +74,9 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+
+    --mode-pagination-color: rgb(67, 45, 215);
+    --mode-pagination-text-color: white;
     --q3-base-red: #e02a5e;
     --q3-base-orange: #ff7000;
     --q3-base-green: #00893c;
@@ -178,7 +181,7 @@
       var(--q3-stroke-light),
       var(--q3-blue-normal)
     );
-    /* Light mode rank colors  */
+
     --rank1-bg: linear-gradient(180deg, #fff7de 0%, #ffffff 100%);
     --rank1-border: linear-gradient(180deg, #ffc721 0%, #ffffff 100%);
     --rank1-rank-bg: var(--q3-yellow-light);
@@ -196,13 +199,13 @@
   }
 
   .dark {
-    --background: rgb(27, 33, 38); /* Exact color from Figma */
+    --background: rgb(27, 33, 38); 
     --foreground: oklch(0.985 0 0);
-    --card: rgb(32, 42, 50); /* Matches Figma's surface-dim */
+    --card: rgb(32, 42, 50); 
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.269 0 0);
     --popover-foreground: oklch(0.985 0 0);
-    --primary: rgb(163, 179, 255); /* Color for pagination from Figma */
+    --primary: rgb(163, 179, 255);
     --primary-foreground: rgb(27, 33, 38);
     --secondary: oklch(0.269 0 0);
     --secondary-foreground: oklch(0.985 0 0);
@@ -227,6 +230,9 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.439 0 0);
+    /* Pagination specific variables */
+    --mode-pagination-color: rgb(163, 179, 255);
+    --mode-pagination-text-color: rgb(20, 20, 30);
     --q3-base-red: #ff6654;
     --q3-base-orange: #ff7000;
     --q3-base-green: #36bb43;
@@ -316,7 +322,7 @@
     --q3-rose-light: var(--rose-900);
     --q3-rose-normal: var(--rose-300);
     --q3-rose-dark: var(--rose-100);
-    --q3-surface-dimmest: rgb(59, 71, 81); /* Current User row color from Figma */
+    --q3-surface-dimmest: rgb(59, 71, 81);
     --q3-gradient-border: linear-gradient(
       to right,
       var(--q3-stroke-light),
@@ -324,7 +330,6 @@
       var(--q3-blue-normal)
     );
 
-    /* Dark mode rank colors */
     --rank1-bg: linear-gradient(180deg, #332600 0%, #1b2126 100%);
     --rank1-border: linear-gradient(180deg, #ffc721 0%, #1b2126 100%);
     --rank1-rank-bg: var(--q3-yellow-dark);
@@ -352,12 +357,8 @@
     color: var(--foreground);
   }
 
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+@keyframes highlightRow {
+  0% { background-color: var(--primary-foreground); }
+  50% { background-color: var(--primary); }
+  100% { background-color: var(--primary-foreground); }
 }
