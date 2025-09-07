@@ -1,0 +1,101 @@
+.leaderboard-card {
+  width: 264px;
+  border-radius: 24px 24px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+}
+
+.leaderboard-card--current-user {
+  background: var(--q3-surface-dimmest) padding-box, var(--current-user-border) border-box;
+  border: 1px solid transparent;
+  border-radius: 24px 24px 0 0;
+}
+
+.leaderboard-card--rank1 {
+  background: var(--rank1-bg) padding-box, var(--rank1-border) border-box;
+  border: 1px solid transparent;
+  border-radius: 24px 24px 0 0;
+}
+
+.leaderboard-card--rank2 {
+  background: var(--rank2-bg) padding-box, var(--rank2-border) border-box;
+  border: 1px solid transparent;
+  border-radius: 24px 24px 0 0;
+}
+
+.leaderboard-card--rank3 {
+  background: var(--rank3-bg) padding-box, var(--rank3-border) border-box;
+  border: 1px solid transparent;
+  border-radius: 24px 24px 0 0;
+}
+
+.leaderboard-card--default {
+  background: var(--q3-surface-default);
+  border: 1px solid var(--q3-stroke-normal);
+  border-radius: 24px 24px 0 0;
+}
+
+.rank-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+}
+
+.rank-badge--current-user {
+  background: var(--q3-surface-dim);
+  color: var(--q3-neutral-default);
+}
+
+.rank-badge--rank1 {
+  background: var(--rank1-rank-bg);
+  color: var(--rank1-rank-color);
+}
+
+.rank-badge--rank2 {
+  background: var(--rank2-rank-bg);
+  color: var(--rank2-rank-color);
+}
+
+.rank-badge--rank3 {
+  background: var(--rank3-rank-bg);
+  color: var(--rank3-rank-color);
+}
+
+.rank-badge--default {
+  background: var(--q3-surface-dim);
+  color: var(--q3-neutral-default);
+}
+
+.avatar-container {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--q3-stroke-normal);
+  background: linear-gradient(0deg, #6EDAEB, #6EDAEB), linear-gradient(0deg, #D7BFE7, #D7BFE7);
+  position: relative;
+  z-index: 10;
+}
+
+.medal-icon {
+  position: relative;
+  margin-top: -0.125rem;
+  z-index: 0;
+}
+
+.fallback-avatar {
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(to bottom right, var(--from-blue-400, #60a5fa), var(--to-blue-600, #2563eb));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+}
+
+.dark .fallback-avatar {
+  background-image: linear-gradient(to bottom right, var(--from-blue-600, #2563eb), var(--to-blue-800, #1e40af));
+}
