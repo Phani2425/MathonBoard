@@ -15,7 +15,7 @@ const CurrentUserCard: React.FC<CurrentUserCardProps> = ({ currentUser }) => {
 
   return (
     <div 
-      className="flex items-stretch gap-0 h-16 rounded-t-2xl border w-full"
+      className="flex items-stretch gap-0 h-16 rounded-t-2xl border w-full overflow-x-auto scrollbar-hide"
       style={{ 
         background: 'var(--q3-surface-dimmest)',
         backdropFilter: 'blur(30px)',
@@ -23,7 +23,7 @@ const CurrentUserCard: React.FC<CurrentUserCardProps> = ({ currentUser }) => {
         borderColor: 'var(--q3-stroke-normal)'
       }}
     >
-      <div className="w-[94px] flex items-center justify-center">
+      <div className="min-w-[94px] w-[94px] flex items-center justify-center flex-shrink-0">
         <div 
           className="w-7 h-7 rounded-full flex items-center justify-center border"
           style={{
@@ -37,8 +37,8 @@ const CurrentUserCard: React.FC<CurrentUserCardProps> = ({ currentUser }) => {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center gap-4 px-4">
-        <div className="w-8 h-8 rounded-[18px] overflow-hidden border-2" style={{ 
+      <div className="flex-1 min-w-[200px] flex items-center gap-3 px-4">
+        <div className="w-8 h-8 rounded-[18px] overflow-hidden border-2 flex-shrink-0" style={{ 
           background: 'linear-gradient(0deg, #6EDAEB, #6EDAEB), linear-gradient(0deg, #D7BFE7, #D7BFE7)',
           borderColor: 'var(--q3-stroke-normal)'
         }}>
@@ -58,12 +58,14 @@ const CurrentUserCard: React.FC<CurrentUserCardProps> = ({ currentUser }) => {
             {currentUser.userId.name.charAt(0).toUpperCase()}
           </div>
         </div>
-        <span className="font-bold text-sm text-foreground">
-          {currentUser.userId.name} <span className="text-primary">(You)</span>
-        </span>
+        <div className="flex-1 min-w-0">
+          <span className="font-bold text-sm text-foreground block truncate">
+            {currentUser.userId.name} <span className="text-primary">(You)</span>
+          </span>
+        </div>
       </div>
 
-      <div className="w-[128px] flex items-center justify-center">
+      <div className="min-w-[128px] w-[128px] flex items-center justify-center flex-shrink-0">
         <div 
           className="inline-flex items-center gap-1 px-3 py-1 rounded-full"
           style={{ background: 'var(--q3-surface-dim)' }}
@@ -74,25 +76,25 @@ const CurrentUserCard: React.FC<CurrentUserCardProps> = ({ currentUser }) => {
         </div>
       </div>
 
-      <div className="w-[104px] flex items-center justify-center">
+      <div className="min-w-[104px] w-[104px] flex items-center justify-center flex-shrink-0">
         <span className="font-medium text-base text-foreground">
           {getSubjectScore('physics')}
         </span>
       </div>
 
-      <div className="w-[104px] flex items-center justify-center">
+      <div className="min-w-[104px] w-[104px] flex items-center justify-center flex-shrink-0">
         <span className="font-medium text-base text-foreground">
           {getSubjectScore('chemistry')}
         </span>
       </div>
 
-      <div className="w-[104px] flex items-center justify-center">
+      <div className="min-w-[104px] w-[104px] flex items-center justify-center flex-shrink-0">
         <span className="font-medium text-base text-foreground">
           {getSubjectScore('math')}
         </span>
       </div>
 
-      <div className="w-[104px] flex items-center justify-center">
+      <div className="min-w-[104px] w-[104px] flex items-center justify-center flex-shrink-0">
         <span className="font-medium text-base text-foreground">
           {currentUser.accuracy.toFixed(2)}%
         </span>

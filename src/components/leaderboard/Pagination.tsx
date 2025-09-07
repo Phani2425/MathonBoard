@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '../../lib/utils';
 import { getPageNumbers } from '../../lib/utils';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginationProps {
   currentPage: number;
@@ -28,12 +29,16 @@ const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           className={cn(
-            "h-8 px-2 flex items-center justify-center rounded-full border border-[var(--q3-stroke-normal)] transition-colors duration-200 cursor-pointer",
-            currentPage === 1 ? "opacity-30 cursor-not-allowed bg-transparent text-foreground" : "hover:bg-[var(--muted)]"
+            "h-8 flex items-center justify-center rounded-full border border-[var(--q3-stroke-normal)] transition-colors duration-200 cursor-pointer text-sm font-medium",
+            "w-8 md:w-auto md:px-2", 
+            currentPage === 1 
+              ? "opacity-30 cursor-not-allowed bg-transparent text-foreground" 
+              : "hover:bg-[var(--muted)] text-foreground"
           )}
           aria-label="Previous page"
         >
-          <span className="text-foreground">Previous</span>
+          <ChevronLeft className="w-4 h-4 md:mr-1" />
+          <span className="hidden md:inline">Previous</span>
         </button>
         
         {pageNumbers.map((page, index) => (
@@ -52,7 +57,7 @@ const Pagination: React.FC<PaginationProps> = ({
                 "h-8 w-8 flex items-center justify-center text-sm font-medium rounded-full transition-colors duration-200 cursor-pointer hover:brightness-110",
                 currentPage === page 
                   ? "bg-[var(--mode-pagination-color)] text-[var(--mode-pagination-text-color)] border-none" 
-                  : "bg-transparent text-foreground border border-[var(--q3-stroke-normal)]"
+                  : "bg-transparent text-foreground border border-[var(--q3-stroke-normal)] hover:bg-[var(--muted)]"
               )}
             >
               {page}
@@ -64,12 +69,16 @@ const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           className={cn(
-            "h-8 px-2 flex items-center justify-center rounded-full border border-[var(--q3-stroke-normal)] transition-colors duration-200 cursor-pointer",
-            currentPage === totalPages ? "opacity-30 cursor-not-allowed bg-transparent text-foreground" : "hover:bg-[var(--muted)]"
+            "h-8 flex items-center justify-center rounded-full border border-[var(--q3-stroke-normal)] transition-colors duration-200 cursor-pointer text-sm font-medium",
+            "w-8 md:w-auto md:px-2", 
+            currentPage === totalPages 
+              ? "opacity-30 cursor-not-allowed bg-transparent text-foreground" 
+              : "hover:bg-[var(--muted)] text-foreground"
           )}
           aria-label="Next page"
         >
-          <span className="text-foreground">Next</span>
+          <span className="hidden md:inline">Next</span>
+          <ChevronRight className="w-4 h-4 md:ml-1" />
         </button>
       </div>
     </div>

@@ -188,9 +188,6 @@ export function getRankBadgeClass(rank: number, isCurrentUser: boolean = false):
   }
 }
 
-/**
- * Format rank as ordinal string (1st, 2nd, 3rd, etc.)
- */
 export function formatRankOrdinal(rank: number): string {
   if (rank === 1) return "1st";
   if (rank === 2) return "2nd";

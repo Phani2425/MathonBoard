@@ -362,3 +362,17 @@
   50% { background-color: var(--primary); }
   100% { background-color: var(--primary-foreground); }
 }
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
