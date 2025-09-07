@@ -7,6 +7,52 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Get subject score from leaderboard entry
+ */
+export function getSubjectScore(entry: LeaderboardEntry, subjectType: string): number {
+  const subject = entry.subjects.find(s => 
+    s.subjectId.title.toLowerCase().includes(subjectType.toLowerCase())
+  );
+  return subject ? subject.totalMarkScored : 0;
+}
+
+/**
+ * Format accuracy value to display as percentage
+ */
+export function formatAccuracy(accuracy: number): string {
+  return `${accuracy.toFixed(2)}%`;
+}
+
+/**
+ * Generate page numbers for pagination
+ */
+export function getPageNumbers(currentPage: number, totalPages: number): (number | string)[] {
+  const pageNumbers = [];
+  
+  // Always show first page
+  if (currentPage > 1) {
+    pageNumbers.push(1);
+  }
+  
+  // Show current page and neighbors
+  for (let i = Math.max(1, currentPage - 1); i <= Math.min(totalPages, currentPage + 1); i++) {
+    if (!pageNumbers.includes(i)) {
+      pageNumbers.push(i);
+    }
+  }
+  
+  // Add ellipsis and last page if needed
+  if (currentPage < totalPages - 1) {
+    if (currentPage < totalPages - 2) {
+      pageNumbers.push('...');
+    }
+    pageNumbers.push(totalPages);
+  }
+  
+  return pageNumbers;
+}
+
+/**
  * Generates a mock current user from available leaderboard data or creates a default one
  */
 export function getMockCurrentUser(data: LeaderboardEntry[]): CurrentUserInfo {
