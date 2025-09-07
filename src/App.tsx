@@ -1,9 +1,12 @@
 import './App.css'
 import LeaderboardPage from './components/leaderboard/LeaderboardPage'
+import { ThemeProvider } from './components/theme/theme-provider'
 
 function App() {
   return (
-    <LeaderboardPage />
+    <ThemeProvider defaultTheme="light">
+      <LeaderboardPage />
+    </ThemeProvider>
   )
 }
 
