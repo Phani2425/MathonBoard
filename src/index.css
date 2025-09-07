@@ -196,14 +196,14 @@
   }
 
   .dark {
-    --background: oklch(0.145 0 0);
+    --background: rgb(27, 33, 38); /* Exact color from Figma */
     --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
+    --card: rgb(32, 42, 50); /* Matches Figma's surface-dim */
     --card-foreground: oklch(0.985 0 0);
     --popover: oklch(0.269 0 0);
     --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
+    --primary: rgb(163, 179, 255); /* Color for pagination from Figma */
+    --primary-foreground: rgb(27, 33, 38);
     --secondary: oklch(0.269 0 0);
     --secondary-foreground: oklch(0.985 0 0);
     --muted: oklch(0.269 0 0);
@@ -242,18 +242,18 @@
     --q3-neutral-default: #ffffff;
     --q3-neutral-light: #bcc6d3;
     --q3-neutral-light-v3: #c8cbd5;
-    --q3-surface-default: #1b2126;
-    --q3-surface-glass: #1b21265a;
-    --q3-surface-dim: #202a32;
+    --q3-surface-default: rgb(27, 33, 38);
+    --q3-surface-glass: rgb(27, 33, 38, 0.8);
+    --q3-surface-dim: rgb(32, 42, 50);
     --q3-accent-normal: var(--indigo-300);
     --q3-stroke-normal: #303d47;
-    --q3-stroke-glass: #1b212632;
-    --q3-surface-glass-light: #1b212614;
-    --q3-surface-glass-normal: #1b212650;
+    --q3-stroke-glass: rgb(27, 33, 38, 0.32);
+    --q3-surface-glass-light: rgb(27, 33, 38, 0.14);
+    --q3-surface-glass-normal: rgb(27, 33, 38, 0.5);
     --q3-stroke-dark: #374552;
     --q3-stroke-light: #29343d;
-    --q3-surface-default_0: #1b212600;
-    --q3-surface-dim_0: #0f151a00;
+    --q3-surface-default_0: rgb(27, 33, 38, 0);
+    --q3-surface-dim_0: rgb(32, 42, 50, 0);
     --q3-neutral-default_inverted: #1d2933;
     --q3-accent-light: var(--indigo-900);
     --q3-accent-dark: var(--indigo-100);
@@ -263,7 +263,7 @@
     --q3-success-light: var(--emerald-900);
     --q3-success-normal: var(--emerald-300);
     --q3-success-dark: var(--emerald-100);
-    --q3-surface-dimmer: #27333d;
+    --q3-surface-dimmer: rgb(39, 51, 61);
     --q3-neutral-light_inverted: #12263fb3;
     --q3-warning-light: var(--yellow-100);
     --q3-warning-normal: var(--yellow-500);
@@ -316,7 +316,7 @@
     --q3-rose-light: var(--rose-900);
     --q3-rose-normal: var(--rose-300);
     --q3-rose-dark: var(--rose-100);
-    --q3-surface-dimmest: #3b4751;
+    --q3-surface-dimmest: rgb(59, 71, 81); /* Current User row color from Figma */
     --q3-gradient-border: linear-gradient(
       to right,
       var(--q3-stroke-light),
@@ -337,6 +337,7 @@
 
     --rank3-bg: linear-gradient(180deg, #330f00 0%, #1b2126 100%);
     --rank3-border: linear-gradient(180deg, #ffb86a 0%, #1b2126 100%);
+    --current-user-border: linear-gradient(180deg, #3A4957 0%, transparent 100%);
     --rank3-rank-bg: var(--q3-orange-dark);
     --rank3-rank-color: var(--q3-orange-light);
   }
