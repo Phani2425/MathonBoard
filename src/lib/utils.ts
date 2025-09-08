@@ -334,18 +334,15 @@ export function filterLeaderboardData(
   criteria: FilterCriteria
 ): LeaderboardEntry[] {
   return data.filter((entry) => {
-    // Search term filter - Fix: properly search in student names
     if (criteria.searchTerm) {
       const searchLower = criteria.searchTerm.toLowerCase().trim();
       const studentName = entry.userId.name.toLowerCase();
 
-      // Search should match anywhere in the name
       if (!studentName.includes(searchLower)) {
         return false;
       }
     }
 
-    // Score range filter
     if (criteria.scoreRange) {
       const { min, max } = criteria.scoreRange;
       if (entry.totalMarkScored < min || entry.totalMarkScored > max) {
@@ -353,7 +350,6 @@ export function filterLeaderboardData(
       }
     }
 
-    // Accuracy range filter
     if (criteria.accuracyRange) {
       const { min, max } = criteria.accuracyRange;
       if (entry.accuracy < min || entry.accuracy > max) {
@@ -361,11 +357,10 @@ export function filterLeaderboardData(
       }
     }
 
-    // Subject filter (if user has good scores in selected subjects)
     if (criteria.subjects && criteria.subjects.length > 0) {
       const hasGoodSubjectScores = criteria.subjects.some((subject) => {
         const score = getSubjectScore(entry, subject);
-        return score > 50; // Threshold for "good" score
+        return score > 50;
       });
       if (!hasGoodSubjectScores) {
         return false;

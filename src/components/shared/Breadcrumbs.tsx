@@ -13,11 +13,9 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
   return (
     <nav className="flex items-center gap-1 overflow-x-auto whitespace-nowrap pb-1 scrollbar-hide">
       {items.map((item, index) => {
-        // On small screens, show only first and last items with ellipsis in between
         const isFirstItem = index === 0;
         const isLastItem = index === items.length - 1;
         
-        // For small screens, only show first, ellipsis, and last item
         const shouldShowOnSmall = isFirstItem || isLastItem;
         
         return (

@@ -122,9 +122,7 @@ const Filters: React.FC<FiltersProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* Search and Filter Controls in One Row */}
       <div className="flex gap-2">
-        {/* Search Input - Takes most space */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -136,7 +134,6 @@ const Filters: React.FC<FiltersProps> = ({
           />
         </div>
 
-        {/* Filters Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="gap-2 h-9">
@@ -192,7 +189,6 @@ const Filters: React.FC<FiltersProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Clear All Button */}
         {hasActiveFilters && (
           <Button
             variant="ghost"
@@ -206,7 +202,6 @@ const Filters: React.FC<FiltersProps> = ({
         )}
       </div>
 
-      {/* Active Filter Chips */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-1">
           {activeFilters.searchTerm && (

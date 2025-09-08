@@ -230,7 +230,6 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.439 0 0);
-    /* Pagination specific variables */
     --mode-pagination-color: rgb(163, 179, 255);
     --mode-pagination-text-color: rgb(20, 20, 30);
     --q3-base-red: #ff6654;

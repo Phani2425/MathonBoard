@@ -11,7 +11,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user }) => {
   const [imageError, setImageError] = React.useState(false);
   
   const handleImageError = () => {
-    console.log(`Profile image failed to load for user: ${user.name}`);
     setImageError(true);
   };
   

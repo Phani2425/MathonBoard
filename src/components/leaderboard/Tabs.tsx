@@ -15,7 +15,6 @@ const Tabs: React.FC<TabsProps> = ({ activeTab, onTabChange, availableSubjects }
     { id: 'topPerformers' as LeaderboardTab, label: 'Top 10' },
   ];
 
-  // Add subject-specific tabs based on available data
   availableSubjects.forEach(subject => {
     if (subject.toLowerCase().includes('physics')) {
       tabs.push({ id: 'physics' as LeaderboardTab, label: 'Physics' });
