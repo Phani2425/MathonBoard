@@ -55,9 +55,13 @@ const Filters: React.FC<FiltersProps> = ({
 
   const handleSubjectToggle = (subject: string, checked: boolean) => {
     const currentSubjects = activeFilters.subjects || [];
-    const newSubjects = checked
-      ? [...currentSubjects, subject]
-      : currentSubjects.filter(s => s !== subject);
+    let newSubjects = [];
+    
+    if (checked) {
+      newSubjects = [...currentSubjects, subject];
+    } else {
+      newSubjects = currentSubjects.filter(s => s !== subject);
+    }
     
     onFilterChange({
       ...activeFilters,
@@ -76,11 +80,17 @@ const Filters: React.FC<FiltersProps> = ({
     if (filterType === 'searchTerm') {
       setSearchTerm('');
       delete newFilters.searchTerm;
-    } else if (filterType === 'scoreRange') {
+    } 
+    
+    if (filterType === 'scoreRange') {
       delete newFilters.scoreRange;
-    } else if (filterType === 'accuracyRange') {
+    } 
+    
+    if (filterType === 'accuracyRange') {
       delete newFilters.accuracyRange;
-    } else if (filterType === 'subjects' && value) {
+    } 
+    
+    if (filterType === 'subjects' && value) {
       const currentSubjects = newFilters.subjects || [];
       const updatedSubjects = currentSubjects.filter(s => s !== value);
       if (updatedSubjects.length > 0) {
@@ -146,7 +156,7 @@ const Filters: React.FC<FiltersProps> = ({
               )}
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end">
+          <DropdownMenuContent className="w-56 dark:bg-[#181d21] bg-white" align="end">
             <DropdownMenuLabel>Filter Options</DropdownMenuLabel>
             <DropdownMenuSeparator />
 

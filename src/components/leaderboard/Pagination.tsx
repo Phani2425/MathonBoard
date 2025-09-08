@@ -16,10 +16,12 @@ const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   className,
 }) => {
+  // don't show pagination if there's only 1 page
   if (totalPages <= 1) {
     return null;
   }
 
+  // get the page numbers to display
   const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   return (
@@ -41,29 +43,33 @@ const Pagination: React.FC<PaginationProps> = ({
           <span className="hidden md:inline">Previous</span>
         </button>
         
-        {pageNumbers.map((page, index) => (
-          page === '...' ? (
-            <span 
-              key={`ellipsis-${index}`}
-              className="h-8 w-8 flex items-center justify-center text-sm font-medium text-foreground"
-            >
-              ...
-            </span>
-          ) : (
-            <button
-              key={`page-${page}`}
-              onClick={() => onPageChange(page as number)}
-              className={cn(
-                "h-8 w-8 flex items-center justify-center text-sm font-medium rounded-full transition-colors duration-200 cursor-pointer hover:brightness-110",
-                currentPage === page 
-                  ? "bg-[var(--mode-pagination-color)] text-[var(--mode-pagination-text-color)] border-none" 
-                  : "bg-transparent text-foreground border border-[var(--q3-stroke-normal)] hover:bg-[var(--muted)]"
-              )}
-            >
-              {page}
-            </button>
-          )
-        ))}
+        {pageNumbers.map((page, index) => {
+          if (page === '...') {
+            return (
+              <span 
+                key={`ellipsis-${index}`}
+                className="h-8 w-8 flex items-center justify-center text-sm font-medium text-foreground"
+              >
+                ...
+              </span>
+            );
+          } else {
+            return (
+              <button
+                key={`page-${page}`}
+                onClick={() => onPageChange(page as number)}
+                className={cn(
+                  "h-8 w-8 flex items-center justify-center text-sm font-medium rounded-full transition-colors duration-200 cursor-pointer hover:brightness-110",
+                  currentPage === page 
+                    ? "bg-[var(--mode-pagination-color)] text-[var(--mode-pagination-text-color)] border-none" 
+                    : "bg-transparent text-foreground border border-[var(--q3-stroke-normal)] hover:bg-[var(--muted)]"
+                )}
+              >
+                {page}
+              </button>
+            );
+          }
+        })}
         
         <button
           onClick={() => onPageChange(currentPage + 1)}

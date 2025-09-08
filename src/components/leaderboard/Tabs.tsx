@@ -10,18 +10,25 @@ interface TabsProps {
 }
 
 const Tabs: React.FC<TabsProps> = ({ activeTab, onTabChange, availableSubjects }) => {
-  const tabs = [
-    { id: 'overall' as LeaderboardTab, label: 'Overall' },
-    { id: 'topPerformers' as LeaderboardTab, label: 'Top 10' },
+  type TabItem = { id: LeaderboardTab; label: string };
+  const tabs: TabItem[] = [
+    { id: 'overall', label: 'Overall' },
+    { id: 'topPerformers', label: 'Top 10' }
   ];
-
+  
+  const addedSubjects = new Set<string>();
+  
   availableSubjects.forEach(subject => {
-    if (subject.toLowerCase().includes('physics')) {
-      tabs.push({ id: 'physics' as LeaderboardTab, label: 'Physics' });
-    } else if (subject.toLowerCase().includes('chemistry')) {
-      tabs.push({ id: 'chemistry' as LeaderboardTab, label: 'Chemistry' });
-    } else if (subject.toLowerCase().includes('math')) {
-      tabs.push({ id: 'maths' as LeaderboardTab, label: 'Maths' });
+    const subjectLower = subject.toLowerCase();
+    if (subjectLower.includes('physics') && !addedSubjects.has('physics')) {
+      tabs.splice(1, 0, { id: 'physics', label: 'Physics' });
+      addedSubjects.add('physics');
+    } else if (subjectLower.includes('chemistry') && !addedSubjects.has('chemistry')) {
+      tabs.splice(1, 0, { id: 'chemistry', label: 'Chemistry' });
+      addedSubjects.add('chemistry');
+    } else if ((subjectLower.includes('math') || subjectLower.includes('mathematics')) && !addedSubjects.has('maths')) {
+      tabs.splice(1, 0, { id: 'maths', label: 'Maths' });
+      addedSubjects.add('maths');
     }
   });
 
