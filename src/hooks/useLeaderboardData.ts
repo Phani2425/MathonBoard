@@ -48,16 +48,11 @@ export const useLeaderboardData = ({
             setCurrentUser(response.data.me);
           }
           
-          // The API returns totalPages at the top level, not in a meta object
           if (response.data.totalPages) {
-            console.log('Total Pages from API:', response.data.totalPages);
             setTotalPages(response.data.totalPages);
           } else {
-            console.log('No totalPages in response, defaulting to 1');
             setTotalPages(1);
           }
-          
-          console.log('API Response:', response.data);
         } else {
           setError(response.data.message || 'Failed to fetch leaderboard data');
         }

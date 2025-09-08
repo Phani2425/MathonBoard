@@ -30,13 +30,8 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
   const rankBadgeClass = getRankBadgeClass(rank, isCurrentUser);
   const medalIcon = getMedalIcon(rank, isCurrentUser);
 
-  // Add border class for current user
-  const borderClass = isCurrentUser 
-    ? "border border-border/30 dark:border-border/20" 
-    : "";
-
   return (
-    <div className={cn("leaderboard-card md:w-1/4", cardClass, borderClass)}>
+    <div className={cn("leaderboard-card md:w-1/4", cardClass)}>
       <div className="flex flex-col items-center gap-4 sm:gap-5 px-3 sm:px-6">
         <div className="flex flex-col items-center relative">
           <div className="avatar-container w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16">
@@ -78,7 +73,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({
               {isCurrentUser ? "(You)" : ""}
             </span>
           </h3>
-          <div className={cn("rank-badge", rankBadgeClass)}>
+          <div className={cn("rank-badge flex", rankBadgeClass)}>
             <span className="text-xs font-medium">
               {formatRankOrdinal(rank)} Rank
             </span>

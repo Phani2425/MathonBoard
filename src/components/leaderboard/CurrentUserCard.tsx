@@ -48,7 +48,6 @@ const CurrentUserCard: React.FC<CurrentUserCardProps> = ({ currentUser }) => {
               alt={currentUser.userId.name} 
               className="w-full h-full object-cover"
               onError={(e) => {
-                console.log(`Profile image failed to load for current user: ${currentUser.userId.name}`);
                 e.currentTarget.style.display = 'none';
                 e.currentTarget.parentElement?.querySelector('.fallback-avatar')?.classList.remove('hidden');
               }}

@@ -90,7 +90,7 @@
     --q3-base-purple: #dc1aff;
     --q3-base-pink: #ff4896;
     --q3-neutral-default: #1d2933;
-    --q3-neutral-light-v3: #c8cbd5;
+    --q3-neutral-light-v3: #e2e5ef7c;
     --q3-neutral-light: #60748f;
     --q3-neutral-light-v2: #5b6480;
     --q3-surface-default: #ffffff;
@@ -184,18 +184,21 @@
 
     --rank1-bg: linear-gradient(180deg, #fff7de 0%, #ffffff 100%);
     --rank1-border: linear-gradient(180deg, #ffc721 0%, #ffffff 100%);
-    --rank1-rank-bg: var(--q3-yellow-light);
+    --rank1-rank-bg: var(--q3-yellow-normal, #fef9c2);
     --rank1-rank-color: var(--q3-yellow-dark, #733e0a);
 
     --rank2-bg: linear-gradient(180deg, #eceef1 0%, #ffffff 100%);
     --rank2-border: linear-gradient(180deg, #8593a6 0%, #ffffff 100%);
-    --rank2-rank-bg: var(--q3-surface-dimmest, #0058c61a);
+    --rank2-rank-bg: var(--q3-surface-dimmest, #dce6f3);
     --rank2-rank-color: var(--q3-neutral-default, #1d2933);
 
     --rank3-bg: linear-gradient(180deg, #ffe4d8 0%, #ffffff 100%);
     --rank3-border: linear-gradient(180deg, #f54a00 0%, #ffffff 100%);
     --rank3-rank-bg: var(--q3-orange-light, #ffedd4);
     --rank3-rank-color: var(--q3-orange-normal, #f54a00);
+
+    --current-user-bg: linear-gradient(180deg, #f4f6f8 0%, #ffffff 100%);
+    --current-user-border: linear-gradient(180deg, #838d953e 0%, #ffffff 100%);
   }
 
   .dark {
@@ -246,7 +249,7 @@
     --q3-base-pink: #ff4896;
     --q3-neutral-default: #ffffff;
     --q3-neutral-light: #bcc6d3;
-    --q3-neutral-light-v3: #c8cbd5;
+    --q3-neutral-light-v3: #9598a122;
     --q3-surface-default: rgb(27, 33, 38);
     --q3-surface-glass: rgb(27, 33, 38, 0.8);
     --q3-surface-dim: rgb(32, 42, 50);
@@ -331,19 +334,22 @@
 
     --rank1-bg: linear-gradient(180deg, #332600 0%, #1b2126 100%);
     --rank1-border: linear-gradient(180deg, #ffc721 0%, #1b2126 100%);
-    --rank1-rank-bg: var(--q3-yellow-dark);
-    --rank1-rank-color: var(--q3-yellow-light);
+    --rank1-rank-bg: var(--q3-yellow-dark,#733e0a);
+    --rank1-rank-color: var(--q3-yellow-light,#fef9c2);
 
     --rank2-bg: linear-gradient(180deg, #2c323a 0%, #1b2126 100%);
     --rank2-border: linear-gradient(180deg, #6a869e 0%, #1b2126 100%);
-    --rank2-rank-bg: var(--q3-surface-dimmer);
-    --rank2-rank-color: var(--q3-neutral-light);
+    --rank2-rank-bg: var(--q3-surface-dimmer,#fef9c2);
+    --rank2-rank-color: var(--q3-neutral-light,#ffffff);
 
     --rank3-bg: linear-gradient(180deg, #330f00 0%, #1b2126 100%);
     --rank3-border: linear-gradient(180deg, #ffb86a 0%, #1b2126 100%);
     --current-user-border: linear-gradient(180deg, #3A4957 0%, transparent 100%);
-    --rank3-rank-bg: var(--q3-orange-dark);
-    --rank3-rank-color: var(--q3-orange-light);
+    --rank3-rank-bg: var(--q3-orange-dark,#7e2a0c);
+    --rank3-rank-color: var(--q3-orange-light,#ffb86a);
+
+    --current-user-bg: linear-gradient(180deg, #1b2126 0%, #1b2126 100%);
+    --current-user-border: linear-gradient(180deg, #28333b 0%, #1b2126 100%);
   }
 
   * {
@@ -357,9 +363,33 @@
   }
 
 @keyframes highlightRow {
-  0% { background-color: var(--primary-foreground); }
-  50% { background-color: var(--primary); }
-  100% { background-color: var(--primary-foreground); }
+  0% {
+    background-color: rgba(163, 179, 255, 0.2);
+    transform: scale(1.005);
+  }
+  50% {
+    background-color: rgba(163, 179, 255, 0.1);
+    transform: scale(1.002);
+  }
+  100% {
+    background-color: var(--primary-foreground);
+    transform: scale(1);
+  }
+}
+
+@keyframes highlightRowDark {
+  0% {
+    background-color: rgba(163, 179, 255, 0.15);
+    transform: scale(1.005);
+  }
+  50% {
+    background-color: rgba(163, 179, 255, 0.08);
+    transform: scale(1.002);
+  }
+  100% {
+    background-color: var(--primary-foreground);
+    transform: scale(1);
+  }
 }
 
 .scrollbar-hide {

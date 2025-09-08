@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Table,
   TableCell,
@@ -13,7 +13,15 @@ import type {
 import Pagination from "./Pagination";
 import { motion, AnimatePresence } from "framer-motion";
 import UserAvatar from "../shared/UserAvatar";
-import { getSubjectScore, formatAccuracy, cn } from "../../lib/utils";
+import {
+  getSubjectScore,
+  formatAccuracy,
+  cn,
+  sortLeaderboardData,
+  type SortField,
+  type SortDirection,
+} from "../../lib/utils";
+import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 
 interface LeaderboardTableProps {
   leaderboardData: LeaderboardEntry[];
@@ -25,6 +33,7 @@ interface LeaderboardTableProps {
   hidePagination?: boolean;
   showCurrentUserAsLastRow?: boolean;
   currentUserData?: CurrentUserInfo | null;
+  maxHeight?: string;
 }
 
 const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
@@ -37,50 +46,85 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   hidePagination = false,
   showCurrentUserAsLastRow = false,
   currentUserData,
+  maxHeight = "600px",
 }) => {
+  const [sortField, setSortField] = useState<SortField>("rank");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  const sortedData = useMemo(() => {
+    return sortLeaderboardData(leaderboardData, sortField, sortDirection);
+  }, [leaderboardData, sortField, sortDirection]);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection(field === "rank" ? "asc" : "desc");
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />;
+    }
+    return sortDirection === "asc" ? (
+      <ChevronUp className="h-4 w-4 text-primary" />
+    ) : (
+      <ChevronDown className="h-4 w-4 text-primary" />
+    );
+  };
+
   const columnHeaders = useMemo(() => {
     return [
       {
-        id: "rank",
+        id: "rank" as SortField,
         name: "Rank",
         width: "min-w-[94px] w-[94px]",
         style: "text-foreground",
+        sortable: true,
       },
       {
-        id: "student",
+        id: "name" as SortField,
         name: "Student Name",
         width: "flex-1 min-w-[150px]",
         style: "text-foreground",
+        sortable: true,
       },
       {
-        id: "overall",
+        id: "totalScore" as SortField,
         name: "Overall Score",
         width: "min-w-[128px] w-[128px]",
         style: "text-foreground",
+        sortable: true,
       },
       {
-        id: "phy",
+        id: "physics" as SortField,
         name: "Phy",
         width: "min-w-[104px] w-[104px]",
         style: "text-muted-foreground",
+        sortable: true,
       },
       {
-        id: "chem",
+        id: "chemistry" as SortField,
         name: "Chem",
         width: "min-w-[104px] w-[104px]",
         style: "text-muted-foreground",
+        sortable: true,
       },
       {
-        id: "maths",
+        id: "maths" as SortField,
         name: "Maths",
         width: "min-w-[104px] w-[104px]",
         style: "text-muted-foreground",
+        sortable: true,
       },
       {
-        id: "accuracy",
+        id: "accuracy" as SortField,
         name: "Accuracy",
         width: "min-w-[104px] w-[104px]",
         style: "text-muted-foreground",
+        sortable: true,
       },
     ];
   }, []);
@@ -154,13 +198,15 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     );
   };
 
-  // Render current user as table row instead of card
   const renderCurrentUserAsTableRow = (user: CurrentUserInfo) => {
     return (
       <motion.tr
-        className="border-t-2 border-primary/30 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10"
+        className="border-t-2 sticky bottom-0 z-10"
         style={{
-          borderColor: "var(--primary)",
+          borderColor: "var(--q3-stroke-normal)",
+          background: "var(--q3-surface-dimmest)",
+          backdropFilter: "blur(30px)",
+          boxShadow: "0 -4px 12px rgba(0, 0, 0, 0.08)",
         }}
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -168,8 +214,16 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
       >
         <TableCell className="text-center border-0 py-4">
           <div className="flex justify-center">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary text-primary-foreground font-bold text-sm shadow-lg">
-              {user.rank}
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center border"
+              style={{
+                background: "var(--q3-surface-dim)",
+                borderColor: "var(--q3-stroke-light)",
+              }}
+            >
+              <span className="text-xs font-medium text-foreground">
+                {user.rank}
+              </span>
             </div>
           </div>
         </TableCell>
@@ -180,17 +234,22 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
               <span className="font-bold text-sm text-foreground">
                 {user.userId.name}
               </span>
-              <span className="px-2 py-1 bg-primary text-primary-foreground text-xs font-medium rounded-full">
-                You
-              </span>
+              <span className="text-primary">(You)</span>
             </div>
           </div>
         </TableCell>
         <TableCell className="text-center border-0 py-4">
-          <div className="inline-flex items-center gap-1 px-3 py-2 rounded-full bg-primary/20 border border-primary/30">
-            <span className="font-bold text-base text-foreground">{user.totalMarkScored}</span>
+          <div
+            className="inline-flex items-center gap-1 px-3 py-1 rounded-full"
+            style={{ background: "var(--q3-surface-dim)" }}
+          >
+            <span className="font-bold text-base text-foreground">
+              {user.totalMarkScored}
+            </span>
             <span className="text-xs font-medium text-muted-foreground">/</span>
-            <span className="text-xs font-medium text-muted-foreground">300</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              300
+            </span>
           </div>
         </TableCell>
         <TableCell className="text-center border-0 py-4">
@@ -218,43 +277,63 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   };
 
   return (
-    <>
-      <motion.div
-        className="border rounded-xl overflow-x-auto mb-10"
-        style={{ borderColor: "var(--q3-stroke-normal)" }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+    <motion.div
+      className="border rounded-xl overflow-hidden"
+      style={{ borderColor: "var(--q3-stroke-normal)" }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="overflow-auto scrollbar-hide" style={{ maxHeight }}>
         <Table>
-          <TableHeader>
-            <TableRow
-              className="border-0"
-              style={{
-                background: "var(--q3-surface-dim)",
-                borderBottom: "1px solid var(--q3-stroke-light)",
-              }}
-            >
+          <TableHeader
+            className="sticky top-0"
+            style={{
+              background: "var(--q3-surface-dim)",
+              borderBottom: "1px solid var(--q3-stroke-light)",
+            }}
+          >
+            <TableRow className="border-0">
               {columnHeaders.map((header) => (
                 <TableHead
                   key={header.id}
-                  className={`${header.width} text-center h-16 font-medium text-sm ${header.style} border-0`}
+                  className={`${
+                    header.width
+                  } text-center h-16 font-medium text-sm ${
+                    header.style
+                  } border-0 ${
+                    header.sortable
+                      ? "cursor-pointer hover:bg-background/50 transition-colors"
+                      : ""
+                  }`}
+                  onClick={
+                    header.sortable ? () => handleSort(header.id) : undefined
+                  }
                 >
-                  {header.name}
+                  <div
+                    className={`flex items-center gap-2 ${
+                      header.name == "Student Name"
+                        ? "justify-start ml-14"
+                        : "justify-center"
+                    }`}
+                  >
+                    {header.name}
+                    {header.sortable && getSortIcon(header.id)}
+                  </div>
                 </TableHead>
               ))}
             </TableRow>
           </TableHeader>
+
           <AnimatePresence mode="wait">
             <motion.tbody
-              key={`page-${currentPage}`}
+              key={`page-${currentPage}-${sortField}-${sortDirection}`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Regular leaderboard entries */}
-              {leaderboardData.map((entry, index) => {
+              {sortedData.map((entry, index) => {
                 const isCurrentUser = entry.userId._id === currentUserId;
                 return (
                   <motion.tr
@@ -263,7 +342,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                     className={cn(
                       "border-t h-16 transition-colors duration-300",
                       isCurrentUser
-                        ? "[animation:highlightRow_2s_ease-in-out]"
+                        ? "[animation:highlightRow_2s_ease-out] dark:[animation:highlightRowDark_2s_ease-out]"
                         : "transition-all duration-200 ease-in-out hover:bg-[var(--q3-surface-dim)] hover:translate-y-[-2px] hover:shadow-[0_2px_8px_rgba(0,0,0,0.05)] dark:hover:bg-[var(--q3-surface-dimmer)] dark:hover:shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
                     )}
                     style={{
@@ -305,36 +384,28 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                 );
               })}
 
-              {showCurrentUserAsLastRow && currentUserData && (
-                renderCurrentUserAsTableRow(currentUserData)
-              )}
-
-              {/* Pagination Row - Using your original Pagination component */}
-              {!hidePagination && (
-                <motion.tr
-                  className="border-t h-auto"
-                  style={{
-                    borderColor: "var(--q3-stroke-normal)",
-                  }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: 0.3 }}
-                >
-                  <TableCell colSpan={7} className="p-0">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={onPageChange}
-                      className=""
-                    />
-                  </TableCell>
-                </motion.tr>
-              )}
+              {showCurrentUserAsLastRow &&
+                currentUserData &&
+                renderCurrentUserAsTableRow(currentUserData)}
             </motion.tbody>
           </AnimatePresence>
         </Table>
-      </motion.div>
-    </>
+      </div>
+
+      {!hidePagination && (
+        <div
+          className="border-t px-4"
+          style={{ borderColor: "var(--q3-stroke-normal)" }}
+        >
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+            className=""
+          />
+        </div>
+      )}
+    </motion.div>
   );
 };
 
