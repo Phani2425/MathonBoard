@@ -120,10 +120,7 @@ leaderboard/
 
 ```bash
 # Clone the repository
-git clone [repository-url]
-
-# Navigate to project directory
-cd leaderboard
+git clone https://github.com/Phani2425/MathonBoard
 
 # Install dependencies
 npm install
