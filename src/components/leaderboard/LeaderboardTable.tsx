@@ -339,7 +339,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   return (
     <>
       <motion.div
-        className="border rounded-xl overflow-x-auto mb-10"
+        className="border rounded-xl overflow-x-auto mb-1"
         style={{ borderColor: "var(--q3-stroke-normal)" }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

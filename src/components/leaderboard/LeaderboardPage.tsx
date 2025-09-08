@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { ScrollSync, ScrollSyncPane } from "react-scroll-sync";
 import { useLeaderboardData } from "../../hooks/useLeaderboardData";
 import ActionBar from "../shared/ActionBar";
 import TopPerformers from "./TopPerformers";
@@ -25,24 +26,38 @@ import {
 import Pagination from "./Pagination";
 import type { LeaderboardTab } from "./Tabs";
 
+const SCROLL_BREAKPOINT = 1200; 
+
 const LeaderboardPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState<LeaderboardTab>("overall");
   const [filters, setFilters] = useState<FilterCriteria>({});
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
   const limit = 10;
 
   const [initialTopThree, setInitialTopThree] = useState<LeaderboardEntry[]>([]);
   const [initialCurrentUser, setInitialCurrentUser] = useState<CurrentUserInfo | null>(null);
-  const [isCurrentUserInView, setIsCurrentUserInView] = useState(false);
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const { leaderboardData, currentUser, totalPages, isLoading, error } = useLeaderboardData({
     page: currentPage,
     limit,
   });
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsSmallScreen(window.innerWidth <= SCROLL_BREAKPOINT);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => {
+      window.removeEventListener('resize', checkScreenSize);
+    };
+  }, []);
 
   const processedData = useMemo(() => {
     let data = [...leaderboardData];
@@ -101,14 +116,7 @@ const LeaderboardPage: React.FC = () => {
       return totalPages;
     }
 
-    let calculatedPages;
-    
-    if (activeTab === "topPerformers") {
-      calculatedPages = Math.ceil(processedData.length / limit);
-    } else {
-      calculatedPages = Math.ceil(processedData.length / limit);
-    }
-
+    const calculatedPages = Math.ceil(processedData.length / limit);
     return Math.max(calculatedPages, 1);
   }, [processedData.length, limit, activeTab, totalPages, filters]);
 
@@ -161,73 +169,6 @@ const LeaderboardPage: React.FC = () => {
   }, [leaderboardData, currentUser, initialTopThree.length]);
 
   useEffect(() => {
-    if (!userToDisplay) {
-      setIsCurrentUserInView(false);
-      return;
-    }
-
-    const userInCurrentPage = tableData.some(
-      (entry) => entry.userId._id === userToDisplay.userId._id
-    );
-
-    if (!userInCurrentPage) {
-      setIsCurrentUserInView(false);
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
-      return;
-    }
-
-    const setupObserver = () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-
-      const currentUserRows = document.querySelectorAll('[data-current-user="true"]');
-      
-      if (currentUserRows.length === 0) {
-        setIsCurrentUserInView(false);
-        return;
-      }
-
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          let anyVisible = false;
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              anyVisible = true;
-            }
-          });
-          setIsCurrentUserInView(anyVisible);
-        },
-        {
-          threshold: 0.1,
-          rootMargin: "0px 0px -50px 0px",
-        }
-      );
-
-      currentUserRows.forEach((row) => {
-        observerRef.current?.observe(row);
-      });
-    };
-
-    const timeoutId = setTimeout(setupObserver, 400);
-
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [tableData, userToDisplay, currentPage, activeTab]);
-
-  useEffect(() => {
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
     if (tableContainerRef.current) {
       tableContainerRef.current.scrollTop = 0;
     }
@@ -261,26 +202,6 @@ const LeaderboardPage: React.FC = () => {
 
   const handleBackClick = () => {
     setShowAnalytics(false);
-  };
-
-  const MobilePaginationComponent = () => {
-    if (processedTotalPages <= 1) return null;
-
-    return (
-      <motion.div
-        className="px-3 py-4"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.2 }}
-      >
-        <Pagination
-          currentPage={currentPage}
-          totalPages={processedTotalPages}
-          onPageChange={handlePageChange}
-          className="py-0"
-        />
-      </motion.div>
-    );
   };
 
   const renderContent = () => {
@@ -378,91 +299,98 @@ const LeaderboardPage: React.FC = () => {
           />
         </motion.div>
 
-        <div className="hidden md:block">
-          <div className="relative" ref={tableContainerRef}>
-            <AnimatePresence mode="wait">
-              {isLoading ? (
-                <motion.div
-                  key="table-loading"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="px-3 sm:px-6"
-                  role="status"
-                  aria-live="polite"
-                  aria-label="Loading table data"
-                >
-                  <TableSkeleton rows={limit} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key={`table-${currentPage}-${activeTab}`}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="px-3 sm:px-6"
-                >
-                  <LeaderboardTable
-                    leaderboardData={tableData}
-                    currentUserId={userToDisplay?.userId._id}
-                    startingRank={startingRank}
-                    currentPage={currentPage}
-                    totalPages={processedTotalPages}
-                    onPageChange={handlePageChange}
-                    hidePagination={false}
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
+        <div ref={tableContainerRef}>
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <motion.div
+                key="table-loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="px-3 sm:px-6"
+                role="status"
+                aria-live="polite"
+                aria-label="Loading table data"
+              >
+                <TableSkeleton rows={limit} />
+              </motion.div>
+            ) : (
+              <ScrollSync proportional={true} enabled={isSmallScreen}>
+                <div className="w-full">
+                  <motion.div
+                    key={`table-${currentPage}-${activeTab}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="px-3 sm:px-6"
+                  >
+                    <div className="rounded-xl overflow-hidden">
+                      <ScrollSyncPane>
+                        <div 
+                          className="bg-muted/5"
+                          style={{
+                            overflowX: isSmallScreen ? "auto" : "visible",
+                            overflowY: "hidden",
+                          }}
+                        >
+                          <div className={isSmallScreen ? "min-w-[1136px]" : "w-full"}>
+                            <LeaderboardTable
+                              leaderboardData={tableData}
+                              currentUserId={userToDisplay?.userId._id}
+                              startingRank={startingRank}
+                              currentPage={currentPage}
+                              totalPages={processedTotalPages}
+                              onPageChange={handlePageChange}
+                              hidePagination={isSmallScreen}
+                            />
+                          </div>
+                        </div>
+                      </ScrollSyncPane>
+                    </div>
+                  </motion.div>
 
-        <div className="block md:hidden">
-          <div ref={tableContainerRef}>
-            <AnimatePresence mode="wait">
-              {isLoading ? (
-                <motion.div
-                  key="table-loading-mobile"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="px-3"
-                  role="status"
-                  aria-live="polite"
-                  aria-label="Loading table data"
-                >
-                  <TableSkeleton rows={limit} />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key={`table-mobile-${currentPage}-${activeTab}`}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.4, ease: "easeInOut" }}
-                  className="space-y-0"
-                >
-                  <div className="px-3">
-                    <LeaderboardTable
-                      leaderboardData={tableData}
-                      currentUserId={userToDisplay?.userId._id}
-                      startingRank={startingRank}
-                      currentPage={currentPage}
-                      totalPages={processedTotalPages}
-                      onPageChange={handlePageChange}
-                      hidePagination={true}
-                      showCurrentUserAsLastRow={true}
-                      currentUserData={userToDisplay}
-                    />
-                  </div>
-                  <MobilePaginationComponent />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                  {isSmallScreen && processedTotalPages > 1 && (
+                    <motion.div
+                      className="px-3 py-4"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.2 }}
+                    >
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={processedTotalPages}
+                        onPageChange={handlePageChange}
+                        className="py-0"
+                      />
+                    </motion.div>
+                  )}
+
+                  {isSmallScreen && (
+                    <ScrollSyncPane>
+                      <motion.div
+                        className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm z-10 w-full"
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                        style={{
+                          overflowX: "auto",
+                          overflowY: "hidden",
+                        }}
+                        role="complementary"
+                        aria-label="Current user information"
+                      >
+                        <div className="min-w-[1136px]">
+                          {userToDisplay && <CurrentUserCard currentUser={userToDisplay} />}
+                        </div>
+                      </motion.div>
+                    </ScrollSyncPane>
+                  )}
+                </div>
+              </ScrollSync>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
     );
@@ -476,35 +404,23 @@ const LeaderboardPage: React.FC = () => {
       />
 
       <main className="w-full" role="main">
-        <div className="hidden md:block w-full py-4 pb-1 sm:py-6">
+        <div className="w-full py-4 pb-1 sm:py-6">
           <div className="max-w-[1176px] mx-auto">
             <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
           </div>
         </div>
-
-        <div className="block md:hidden w-full py-4 pb-1">
-          <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
-        </div>
       </main>
 
-      {!showAnalytics && (
+      {!showAnalytics && !isSmallScreen && (
         <motion.div
-          className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 hidden md:block z-10"
+          className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm z-10 w-full"
           initial={{ y: 100, opacity: 0 }}
-          animate={{
-            y: isCurrentUserInView ? 100 : 0,
-            opacity: isCurrentUserInView ? 0 : 1,
-          }}
+          animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.3 }}
-          style={{
-            pointerEvents: isCurrentUserInView ? "none" : "auto",
-          }}
           role="complementary"
           aria-label="Current user information"
         >
-          <div className="max-w-[1176px] mx-auto px-3 sm:px-6 pt-3">
-            {userToDisplay && <CurrentUserCard currentUser={userToDisplay} />}
-          </div>
+          {userToDisplay && <CurrentUserCard currentUser={userToDisplay} />}
         </motion.div>
       )}
     </div>
