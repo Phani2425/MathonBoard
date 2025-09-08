@@ -4,6 +4,10 @@ import ActionBar from "../shared/ActionBar";
 import TopPerformers from "./TopPerformers";
 import LeaderboardTable from "./LeaderboardTable";
 import CurrentUserCard from "./CurrentUserCard";
+import CollapsibleFilterSection from "./CollapsibleFilterSection";
+import AnalyticsSection from "./AnalyticsSection";
+import LeaderboardSkeleton from "../shared/LeaderboardSkeleton";
+import TableSkeleton from "../shared/TableSkeleton";
 import type {
   CurrentUserInfo,
   LeaderboardEntry,
@@ -13,50 +17,136 @@ import {
   getMockCurrentUser,
   getStartingRank,
   getTableData,
+  filterLeaderboardData,
+  getAvailableSubjects,
+  getSubjectScore,
+  type FilterCriteria,
 } from "../../lib/utils";
-import "../../assets/styles/LeaderboardPage.css";
 import Pagination from "./Pagination";
+import type { LeaderboardTab } from "./Tabs";
 
 const LeaderboardPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState<LeaderboardTab>("overall");
+  const [filters, setFilters] = useState<FilterCriteria>({});
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const limit = 10;
 
-  const [initialTopThree, setInitialTopThree] = useState<LeaderboardEntry[]>(
-    []
-  );
-  const [initialCurrentUser, setInitialCurrentUser] =
-    useState<CurrentUserInfo | null>(null);
+  const [initialTopThree, setInitialTopThree] = useState<LeaderboardEntry[]>([]);
+  const [initialCurrentUser, setInitialCurrentUser] = useState<CurrentUserInfo | null>(null);
   const [isCurrentUserInView, setIsCurrentUserInView] = useState(false);
 
   const tableContainerRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
-  const { leaderboardData, currentUser, totalPages, isLoading, error } =
-    useLeaderboardData({
-      page: currentPage,
-      limit,
-    });
+  const { leaderboardData, currentUser, totalPages, isLoading, error } = useLeaderboardData({
+    page: currentPage,
+    limit,
+  });
 
-  const tableData = useMemo(
-    () => getTableData(leaderboardData, currentPage),
-    [currentPage, leaderboardData]
-  );
+  const processedData = useMemo(() => {
+    let data = [...leaderboardData];
+    
+    data = filterLeaderboardData(data, filters);
 
-  const startingRank = useMemo(
-    () => getStartingRank(currentPage, limit),
-    [currentPage, limit]
-  );
+    switch (activeTab) {
+      case "topPerformers":
+        data = data.slice(0, 10);
+        break;
+      case "physics":
+        data = data
+          .filter((entry) =>
+            entry.subjects.some((s) =>
+              s.subjectId.title.toLowerCase().includes("physics")
+            )
+          )
+          .sort(
+            (a, b) =>
+              getSubjectScore(b, "physics") - getSubjectScore(a, "physics")
+          );
+        break;
+      case "chemistry":
+        data = data
+          .filter((entry) =>
+            entry.subjects.some((s) =>
+              s.subjectId.title.toLowerCase().includes("chemistry")
+            )
+          )
+          .sort(
+            (a, b) =>
+              getSubjectScore(b, "chemistry") - getSubjectScore(a, "chemistry")
+          );
+        break;
+      case "maths":
+        data = data
+          .filter((entry) =>
+            entry.subjects.some((s) =>
+              s.subjectId.title.toLowerCase().includes("math")
+            )
+          )
+          .sort(
+            (a, b) => getSubjectScore(b, "maths") - getSubjectScore(a, "maths")
+          );
+        break;
+      default:
+        data = data.sort((a, b) => a.rank - b.rank);
+        break;
+    }
+
+    return data;
+  }, [leaderboardData, filters, activeTab]);
+
+  const processedTotalPages = useMemo(() => {
+    if (activeTab === "overall" && Object.keys(filters).length === 0 && totalPages > 0) {
+      return totalPages;
+    }
+
+    let calculatedPages;
+    
+    if (activeTab === "topPerformers") {
+      calculatedPages = Math.ceil(processedData.length / limit);
+    } else {
+      calculatedPages = Math.ceil(processedData.length / limit);
+    }
+
+    return Math.max(calculatedPages, 1);
+  }, [processedData.length, limit, activeTab, totalPages, filters]);
+
+  const tableData = useMemo(() => {
+    if (activeTab === "overall" && Object.keys(filters).length === 0) {
+      return getTableData(processedData, currentPage);
+    }
+
+    const startIndex = (currentPage - 1) * limit;
+    const endIndex = startIndex + limit;
+    return processedData.slice(startIndex, endIndex);
+  }, [processedData, currentPage, limit, activeTab, filters]);
+
+  const startingRank = useMemo(() => {
+    if (activeTab === "overall") {
+      return getStartingRank(currentPage, limit);
+    }
+    return (currentPage - 1) * limit + 1;
+  }, [currentPage, limit, activeTab]);
 
   const topThreeToDisplay = useMemo(() => {
-    return initialTopThree.length > 0
-      ? initialTopThree
-      : leaderboardData.slice(0, 3);
-  }, [initialTopThree, leaderboardData]);
+    if (activeTab === "overall") {
+      return initialTopThree.length > 0
+        ? initialTopThree
+        : processedData.slice(0, 3);
+    }
+    return processedData.slice(0, 3);
+  }, [initialTopThree, processedData, activeTab]);
 
   const userToDisplay = useMemo(() => {
     return (
       initialCurrentUser || currentUser || getMockCurrentUser(leaderboardData)
     );
   }, [initialCurrentUser, currentUser, leaderboardData]);
+
+  const availableSubjects = useMemo(() => {
+    return getAvailableSubjects(leaderboardData);
+  }, [leaderboardData]);
 
   useEffect(() => {
     if (leaderboardData.length > 0 && initialTopThree.length === 0) {
@@ -71,45 +161,76 @@ const LeaderboardPage: React.FC = () => {
   }, [leaderboardData, currentUser, initialTopThree.length]);
 
   useEffect(() => {
-    if (!userToDisplay) return;
+    if (!userToDisplay) {
+      setIsCurrentUserInView(false);
+      return;
+    }
 
     const userInCurrentPage = tableData.some(
       (entry) => entry.userId._id === userToDisplay.userId._id
     );
 
-    setIsCurrentUserInView(userInCurrentPage);
-  }, [tableData, userToDisplay]);
+    if (!userInCurrentPage) {
+      setIsCurrentUserInView(false);
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+      return;
+    }
 
-  useEffect(() => {
-    if (typeof document === "undefined") return;
+    const setupObserver = () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
 
-    const timeoutId = setTimeout(() => {
-      const currentUserRow = document.querySelector(
-        '[data-current-user="true"]'
+      const currentUserRows = document.querySelectorAll('[data-current-user="true"]');
+      
+      if (currentUserRows.length === 0) {
+        setIsCurrentUserInView(false);
+        return;
+      }
+
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          let anyVisible = false;
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              anyVisible = true;
+            }
+          });
+          setIsCurrentUserInView(anyVisible);
+        },
+        {
+          threshold: 0.1,
+          rootMargin: "0px 0px -50px 0px",
+        }
       );
 
-      if (currentUserRow) {
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              setIsCurrentUserInView(entry.isIntersecting);
-            });
-          },
-          {
-            threshold: 0.1,
-            rootMargin: "0px 0px 0px 0px",
-          }
-        );
+      currentUserRows.forEach((row) => {
+        observerRef.current?.observe(row);
+      });
+    };
 
-        observer.observe(currentUserRow);
+    const timeoutId = setTimeout(setupObserver, 400);
 
-        return () => {
-          observer.unobserve(currentUserRow);
-        };
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [tableData, userToDisplay, currentPage, activeTab]);
+
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
       }
-    }, 500);
+    };
+  }, []);
 
-    return () => clearTimeout(timeoutId);
+  useEffect(() => {
+    if (tableContainerRef.current) {
+      tableContainerRef.current.scrollTop = 0;
+    }
   }, [tableData, currentPage]);
 
   const handlePageChange = (page: number) => {
@@ -123,8 +244,27 @@ const LeaderboardPage: React.FC = () => {
     }
   };
 
+  const handleTabChange = (tab: LeaderboardTab) => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+    setFilters({});
+  };
+
+  const handleFilterChange = (newFilters: FilterCriteria) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+  };
+
+  const handleAnalyticsClick = () => {
+    setShowAnalytics(true);
+  };
+
+  const handleBackClick = () => {
+    setShowAnalytics(false);
+  };
+
   const MobilePaginationComponent = () => {
-    if (totalPages <= 1) return null;
+    if (processedTotalPages <= 1) return null;
 
     return (
       <motion.div
@@ -135,9 +275,9 @@ const LeaderboardPage: React.FC = () => {
       >
         <Pagination
           currentPage={currentPage}
-          totalPages={totalPages}
+          totalPages={processedTotalPages}
           onPageChange={handlePageChange}
-          className="py-0" // Remove default padding since we're adding it to the wrapper
+          className="py-0"
         />
       </motion.div>
     );
@@ -148,24 +288,12 @@ const LeaderboardPage: React.FC = () => {
       return (
         <motion.div
           key="loading"
-          className="bg-card rounded-xl shadow-md p-4 sm:p-8 text-center mx-3 sm:mx-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.4 }}
         >
-          <motion.p
-            className="text-base sm:text-lg text-muted-foreground"
-            animate={{
-              opacity: [0.6, 1, 0.6],
-            }}
-            transition={{
-              repeat: Infinity,
-              duration: 1.5,
-            }}
-          >
-            Loading leaderboard data...
-          </motion.p>
+          <LeaderboardSkeleton />
         </motion.div>
       );
     }
@@ -179,9 +307,36 @@ const LeaderboardPage: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.3 }}
+          role="alert"
+          aria-live="polite"
         >
           <h2 className="font-bold mb-2">Error</h2>
           <p>{error instanceof Error ? error.message : String(error)}</p>
+        </motion.div>
+      );
+    }
+
+    if (showAnalytics) {
+      return (
+        <motion.div
+          key="analytics-content"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4 }}
+          className="space-y-4 sm:space-y-6"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="px-3 sm:px-6"
+          >
+            <AnalyticsSection 
+              leaderboardData={leaderboardData}
+              currentUser={userToDisplay}
+            />
+          </motion.div>
         </motion.div>
       );
     }
@@ -201,45 +356,52 @@ const LeaderboardPage: React.FC = () => {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="px-3 sm:px-6"
         >
-          <TopPerformers
-            topThree={topThreeToDisplay}
-            currentUser={userToDisplay}
+          <CollapsibleFilterSection
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            onFilterChange={handleFilterChange}
+            availableSubjects={availableSubjects}
+            activeFilters={filters}
           />
         </motion.div>
 
-        {/* Desktop Layout - Separate table and sticky current user */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="px-3 sm:px-6"
+        >
+          <TopPerformers
+            topThree={topThreeToDisplay}
+            currentUser={userToDisplay}
+            onAnalyticsClick={handleAnalyticsClick}
+          />
+        </motion.div>
+
         <div className="hidden md:block">
           <div className="relative" ref={tableContainerRef}>
             <AnimatePresence mode="wait">
               {isLoading ? (
                 <motion.div
-                  key="page-loading"
-                  className="py-4 pb-1 sm:py-8 text-center px-3 sm:px-6"
+                  key="table-loading"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
+                  className="px-3 sm:px-6"
+                  role="status"
+                  aria-live="polite"
+                  aria-label="Loading table data"
                 >
-                  <motion.p
-                    className="text-sm text-muted-foreground"
-                    animate={{
-                      opacity: [0.6, 1, 0.6],
-                    }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 1.5,
-                    }}
-                  >
-                    #MathBoleTohMathonGo
-                  </motion.p>
+                  <TableSkeleton rows={limit} />
                 </motion.div>
               ) : (
                 <motion.div
-                  key="table-content"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
+                  key={`table-${currentPage}-${activeTab}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
                   className="px-3 sm:px-6"
                 >
                   <LeaderboardTable
@@ -247,8 +409,9 @@ const LeaderboardPage: React.FC = () => {
                     currentUserId={userToDisplay?.userId._id}
                     startingRank={startingRank}
                     currentPage={currentPage}
-                    totalPages={totalPages}
+                    totalPages={processedTotalPages}
                     onPageChange={handlePageChange}
+                    hidePagination={false}
                   />
                 </motion.div>
               )}
@@ -256,57 +419,45 @@ const LeaderboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Layout - Clean and aligned */}
         <div className="block md:hidden">
           <div ref={tableContainerRef}>
             <AnimatePresence mode="wait">
               {isLoading ? (
                 <motion.div
-                  key="page-loading"
-                  className="py-8 text-center px-3"
+                  key="table-loading-mobile"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
+                  className="px-3"
+                  role="status"
+                  aria-live="polite"
+                  aria-label="Loading table data"
                 >
-                  <motion.p
-                    className="text-sm text-muted-foreground"
-                    animate={{
-                      opacity: [0.6, 1, 0.6],
-                    }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 1.5,
-                    }}
-                  >
-                    #MathBoleTohMathonGo
-                  </motion.p>
+                  <TableSkeleton rows={limit} />
                 </motion.div>
               ) : (
                 <motion.div
-                  key="table-content"
+                  key={`table-mobile-${currentPage}-${activeTab}`}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.4, ease: "easeInOut" }}
                   className="space-y-0"
                 >
-                  {/* Table without constraining wrapper */}
                   <div className="px-3">
                     <LeaderboardTable
                       leaderboardData={tableData}
                       currentUserId={userToDisplay?.userId._id}
                       startingRank={startingRank}
                       currentPage={currentPage}
-                      totalPages={totalPages}
+                      totalPages={processedTotalPages}
                       onPageChange={handlePageChange}
-                      hidePagination={true} // Hide pagination inside table
-                      showCurrentUserAsLastRow={true} // Show current user as last row
-                      currentUserData={userToDisplay} // Pass current user data
+                      hidePagination={true}
+                      showCurrentUserAsLastRow={true}
+                      currentUserData={userToDisplay}
                     />
                   </div>
-
-                  {/* Clean Mobile Pagination - No background, proper alignment */}
                   <MobilePaginationComponent />
                 </motion.div>
               )}
@@ -318,41 +469,44 @@ const LeaderboardPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <ActionBar />
+    <div className="min-h-screen bg-background flex flex-col">
+      <ActionBar 
+        showBackButton={showAnalytics}
+        onBackClick={handleBackClick}
+      />
 
-      {/* Main content container - Full width */}
-      <div className="w-full">
-        {/* Desktop container - Full width with max-width constraint only for specific content */}
+      <main className="w-full" role="main">
         <div className="hidden md:block w-full py-4 pb-1 sm:py-6">
           <div className="max-w-[1176px] mx-auto">
             <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
           </div>
         </div>
 
-        {/* Mobile container - Full width without constraints */}
         <div className="block md:hidden w-full py-4 pb-1">
           <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
         </div>
-      </div>
+      </main>
 
-      {/* Desktop sticky bottom current user - Only show when user not in view */}
-      <motion.div
-        className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 hidden md:block z-10"
-        initial={{ y: 100, opacity: 0 }}
-        animate={{
-          y: isCurrentUserInView ? 100 : 0,
-          opacity: isCurrentUserInView ? 0 : 1,
-        }}
-        transition={{ duration: 0.3 }}
-        style={{
-          pointerEvents: isCurrentUserInView ? "none" : "auto",
-        }}
-      >
-        <div className="max-w-[1176px] mx-auto px-3 sm:px-6 py-3">
-          {userToDisplay && <CurrentUserCard currentUser={userToDisplay} />}
-        </div>
-      </motion.div>
+      {!showAnalytics && (
+        <motion.div
+          className="sticky bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 hidden md:block z-10"
+          initial={{ y: 100, opacity: 0 }}
+          animate={{
+            y: isCurrentUserInView ? 100 : 0,
+            opacity: isCurrentUserInView ? 0 : 1,
+          }}
+          transition={{ duration: 0.3 }}
+          style={{
+            pointerEvents: isCurrentUserInView ? "none" : "auto",
+          }}
+          role="complementary"
+          aria-label="Current user information"
+        >
+          <div className="max-w-[1176px] mx-auto px-3 sm:px-6 pt-3">
+            {userToDisplay && <CurrentUserCard currentUser={userToDisplay} />}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };

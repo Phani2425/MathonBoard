@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Icon from './Icon';
 import Breadcrumbs from './Breadcrumbs';
 import { ThemeToggle } from '../theme/theme-toggle';
+import { useTheme } from '../theme/use-theme';
 
-const ActionBar: React.FC = () => {
+interface ActionBarProps {
+  onBackClick?: () => void;
+}
+
+const ActionBar: React.FC<ActionBarProps> = ({ onBackClick }) => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const actionBarRef = useRef<HTMLDivElement>(null);
+  const { theme } = useTheme();
+
   const breadcrumbItems = [
     { label: 'JEE Main Test series' },
     { label: 'Quizrr Part Test' },
@@ -12,29 +21,73 @@ const ActionBar: React.FC = () => {
     { label: 'Leaderboard' }
   ];
 
-  return (
-    <div 
-      className="flex flex-col gap-2 sm:gap-4 px-3 sm:px-6 py-3 sm:py-6"
-      style={{ 
-        background: 'var(--q3-surface-glass)',
-        backdropFilter: 'blur(16px)'
-      }}
-    >
-      <div className="flex items-center gap-4 justify-between">
-        <div className="flex flex-col">
-          <div 
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center mb-1 sm:mb-2"
-            style={{ background: 'var(--q3-surface-dimmer)' }}
-          >
-            <Icon name="arrow-left" size={16} className="sm:hidden" />
-            <Icon name="arrow-left" size={20} className="hidden sm:block" />
-          </div>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">Leaderboard</h1>
-        </div>
-        <ThemeToggle />
-      </div>
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!actionBarRef.current) return;
+      
+      const shouldBeScrolled = window.scrollY > actionBarRef.current.offsetTop + actionBarRef.current.offsetHeight;
+      if (shouldBeScrolled !== isScrolled) {
+        setIsScrolled(shouldBeScrolled);
+      }
+    };
 
-      <Breadcrumbs items={breadcrumbItems} />
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isScrolled]);
+
+  const bgColor = theme === 'dark' ? 'rgb(28, 34, 40,0.7)' : 'rgba(255, 255, 255, 0.7)';
+  const buttonBgColor = theme === 'dark' ? 'rgba(70, 130, 230, 0.1)' : 'rgba(0, 88, 198, 0.06)';
+  const textColor = theme === 'dark' ? '#FFFFFF' : '#1D2933';
+
+  return (
+    <div className="flex justify-center w-full">
+      {isScrolled && <div className="h-[88px] max-w-[1176px] w-full mx-auto"></div>}
+      
+      <div 
+        ref={actionBarRef}
+        className={`w-full max-w-[1176px] z-50 transition-all duration-300 ease-out
+                   ${isScrolled ? 'fixed top-0 border-b shadow-sm rounded-b-2xl animate-slideDown' : ''} 
+                   ${isScrolled ? 'border-[#EAF3FA] dark:border-gray-800' : ''}`}
+        style={{ 
+          backdropFilter: isScrolled ? 'blur(16px)' : 'none',
+          background: isScrolled ? bgColor : 'transparent',
+        }}
+      >
+        <div className={`w-full px-6 transition-all duration-300 ease-out
+                       ${isScrolled ? 'h-[88px] py-3 rounded-b-[12px]' : 'py-6'}`}>
+          <div className="flex items-center justify-between h-full">
+            <div className={`flex transition-all duration-300 ease-out
+                           ${isScrolled ? 'flex-row items-center gap-6' : 'flex-col items-start gap-4'}`}>
+              <div 
+                className="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300"
+                style={{ background: buttonBgColor }}
+                onClick={onBackClick}
+              >
+                <Icon 
+                  name="arrow-left" 
+                  size={24} 
+                  color={theme === 'dark' ? '#ffffff' : undefined} 
+                />
+              </div>
+              <h1 
+                className="text-[20px] font-bold m-0 transition-all duration-300" 
+                style={{ 
+                  fontFamily: 'Inter, sans-serif',
+                  color: textColor
+                }}
+              >
+                Leaderboard
+              </h1>
+            </div>
+            <ThemeToggle />
+          </div>
+          {!isScrolled && (
+            <div className="mt-4 transition-opacity duration-300 ease-out">
+              <Breadcrumbs items={breadcrumbItems} />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
