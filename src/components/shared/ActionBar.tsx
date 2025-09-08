@@ -6,10 +6,9 @@ import { useTheme } from '../theme/use-theme';
 
 interface ActionBarProps {
   onBackClick?: () => void;
-  showBackButton?: boolean;
 }
 
-const ActionBar: React.FC<ActionBarProps> = ({ onBackClick, showBackButton = false }) => {
+const ActionBar: React.FC<ActionBarProps> = ({ onBackClick}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const actionBarRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
@@ -60,9 +59,9 @@ const ActionBar: React.FC<ActionBarProps> = ({ onBackClick, showBackButton = fal
             <div className={`flex transition-all duration-300 ease-out
                            ${isScrolled ? 'flex-row items-center gap-6' : 'flex-col items-start gap-4'}`}>
               <div 
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${showBackButton ? 'cursor-pointer' : 'opacity-0 pointer-events-none'} transition-all duration-300`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300`}
                 style={{ background: buttonBgColor }}
-                onClick={showBackButton ? onBackClick : undefined}
+                onClick={onBackClick}
               >
                 <Icon 
                   name="arrow-left" 

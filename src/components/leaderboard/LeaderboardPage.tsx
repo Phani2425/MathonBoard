@@ -399,7 +399,6 @@ const LeaderboardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <ActionBar 
-        showBackButton={showAnalytics}
         onBackClick={handleBackClick}
       />
 
