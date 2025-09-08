@@ -233,16 +233,21 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         </div>
       );
     }
-    return <span className="font-medium text-base text-foreground">{score}</span>;
+
+    return (
+      <span className="font-medium text-base text-foreground">{score}</span>
+    );
   };
 
-  const renderAccuracy = (accuracy: number) => (
-    <div className="flex items-center justify-center">
-      <span className="font-medium text-base text-foreground">
-        {formatAccuracy(accuracy)}
-      </span>
-    </div>
-  );
+  const renderAccuracy = (accuracy: number) => {
+    return (
+      <div className="flex items-center justify-center">
+        <span className="font-medium text-base text-foreground">
+          {formatAccuracy(accuracy)}
+        </span>
+      </div>
+    );
+  };
 
   const renderSortIcon = (columnId: string) => {
     if (sortField !== columnId) {
