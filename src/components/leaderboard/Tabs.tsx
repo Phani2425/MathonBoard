@@ -33,9 +33,9 @@ const Tabs: React.FC<TabsProps> = ({ activeTab, onTabChange, availableSubjects }
   });
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
       <div 
-        className="flex h-9 items-center rounded-md p-1 text-muted-foreground w-full"
+        className="flex h-9 items-center rounded-md p-1 text-muted-foreground min-w-max"
         style={{ 
           background: 'var(--q3-surface-dim)',
           border: '1px solid var(--q3-stroke-light)'
@@ -46,7 +46,7 @@ const Tabs: React.FC<TabsProps> = ({ activeTab, onTabChange, availableSubjects }
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             className={cn(
-              "flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+              "flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-2 py-1.5 text-xs md:text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 min-w-[70px]",
               activeTab === tab.id
                 ? "bg-background text-foreground shadow-sm"
                 : "hover:bg-background/60 hover:text-foreground/90"
