@@ -15,7 +15,7 @@ const CurrentUserCard: React.FC<CurrentUserCardProps> = ({ currentUser }) => {
 
   return (
     <div 
-      className="flex items-stretch gap-0 h-16 rounded-t-2xl border w-full overflow-x-auto scrollbar-hide md:max-w-[1136px] md:mx-auto px-4 md:px-3 sm:px-6 pt-3"
+      className="flex items-stretch gap-0 h-16 lg:rounded-t-2xl border w-full overflow-x-auto scrollbar-hide md:max-w-[1136px] md:mx-auto px-4 md:px-3 sm:px-6 pt-3"
       style={{ 
         background: 'var(--q3-surface-dimmest)',
         backdropFilter: 'blur(30px)',
